@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PaymentIntegration.Dtos;
 using PaymentIntegration.Interfaces;
 using PaymentIntegration.Models;
@@ -14,29 +13,70 @@ namespace PaymentIntegration.Services
 
         public async Task<CreateInvoiceResponse> CreateInvoiceAsync(CreateInvoiceDto dto)
         {
-            var sendPaymentRequestJSON = JsonConvert.SerializeObject(dto);
-            var response= await PerformRequest(sendPaymentRequestJSON, "SendPayment").ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<CreateInvoiceResponse>(response)!;
+            try
+            {
+
+                var sendPaymentRequestJSON = JsonConvert.SerializeObject(dto);
+                var response = await PerformRequest(sendPaymentRequestJSON, "SendPayment").ConfigureAwait(false);
+                return JsonConvert.DeserializeObject<CreateInvoiceResponse>(response)!;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occured {ex.Message}");
+            }
         }
 
         public async Task<string> GetPaymentStatusAsync(string paymentId,string keyType= "PaymentId")
         {
-            var GetPaymentStatusRequest = new GetPaymnetStatusDto
+            try
             {
-                Key = paymentId,
-                KeyType = keyType
-            };
 
-            var GetPaymentStatusRequestJSON = JsonConvert.SerializeObject(GetPaymentStatusRequest);
-            var response = await PerformRequest(GetPaymentStatusRequestJSON, "SendPayment").ConfigureAwait(false);
-            return await PerformRequest(GetPaymentStatusRequestJSON, "GetPaymentStatus").ConfigureAwait(false);
-  
+                var GetPaymentStatusRequest = new GetPaymnetStatusDto
+                {
+                    Key = paymentId,
+                    KeyType = keyType
+                };
+
+                var GetPaymentStatusRequestJSON = JsonConvert.SerializeObject(GetPaymentStatusRequest);
+                return await PerformRequest(GetPaymentStatusRequestJSON, "GetPaymentStatus").ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occured {ex.Message}");
+            }
+
         }
+
+        public async Task<string> InitiateSession(InitiateSessionDto initiateSession)
+        {
+            try
+            {
+                var InitiateSessionJSON = JsonConvert.SerializeObject(initiateSession);
+                var response = await PerformRequest(InitiateSessionJSON, "InitiateSession").ConfigureAwait(false);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occured {ex.Message}");
+            }
+        }
+
+        public async Task<string> ExecutePayment(ExecutePaymentDto executePaymentDto)
+        {
+            try
+            {
+                var ExecutePaymentJSON = JsonConvert.SerializeObject(executePaymentDto);
+                var response = await PerformRequest(ExecutePaymentJSON, "ExecutePayment").ConfigureAwait(false);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occured {ex.Message}");
+            }
+        }
+
         private  async Task<string> PerformRequest(string requestJSON, string endPoint)
         {
-      
-  
-
             string url = _baseURL + $"/v2/{endPoint}";
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
