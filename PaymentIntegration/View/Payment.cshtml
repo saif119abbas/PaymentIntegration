@@ -1,0 +1,334 @@
+﻿@{
+    ViewData["Title"] = "Embedded Payment";
+    Layout = "_Layout"; // or null if you don’t want to use the shared layout
+}
+
+@section Styles {
+
+    <style>
+        .payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .payment-section {
+            width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        .google-pay-container {
+            width: 400px;
+            margin: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .stc-pay-container {
+            width: 400px;
+            margin: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+}
+
+
+@section Scripts {
+    <script src="https://demo.myfatoorah.com/payment/v1/session.js"></script>
+    <script>
+         var sessionId = "@ViewBag.SessionId";
+         var countryCode = "@ViewBag.CountryCode";
+         var currencyCode = "KWD";
+         var amount = "0.25";
+         var config = {
+             sessionId: sessionId,
+             countryCode: countryCode,
+             currencyCode: currencyCode,
+             amount: amount,
+             callback: payment,
+             containerId: "unified-session",
+             paymentOptions: ["GooglePay", "ApplePay","Card"],
+             supportedNetworks: ["visa", "masterCard", "mada", "amex"],
+             language: "en",
+             settings: {
+                /* stcPay: {
+                     mobileNumber: "0557877988",
+                     useCustomButton: false,
+                     sessionStarted: stcSessionStarted,
+                     style: {
+                         frameHeight: "40px",
+                         frameWidth: "100%"
+                     }
+                 },*/
+                 card: {
+                     style: {
+                         hideNetworkicons: false,
+                         cardHeight: "250px",
+                         tokenHeight: "250px",
+                         Input: {
+                             Color: "black",
+                             fontSize: "15px",
+                             LontFamily: "courier",
+                             inputHeight: "32px",
+                             inputMargin: "3px",
+                             borderColor: "black",
+                             backgroundColor: "green",
+                             borderWidth: "1px",
+                             borderRadius: "30px",
+                             outerRadius: "10px",
+                             //boxshadow: 0 0 10px 5px curple, 00 15px 10px lightblue"
+                             placeholder: {
+                                 holderName: "Name On Card",
+                                 cardNumber: "Number",
+                                 expiryDate: "MM/YY",
+                                 securityCode: "CVV",
+                             }
+                         },
+                         text: {
+                             saveCard: "Save card info for future payments",
+                             addCard: "Use another Card!",
+                             deleteAlert: {
+                                 title: "Delete",
+                                 message: "Are you sure?",
+                                 confirm: "YES",
+                                 cancel: "NO"
+                             }
+                         },
+                         Label: {
+                             display: true,
+                             color: "black",
+                             fontSize: "13px",
+                             fontWeight: "bold",
+                             fontFamily: "Times",
+                             text: {
+                                 holderName: "Card Holder Name",
+                                 cardNumber: "Card Number",
+                                 expirylate: "Expiry Date",
+                                 securityCode: "Security Code",
+                             }
+                         },
+                         error: {
+                             borderColor: "red",
+                             borderRadius: "8px"
+                         },
+                         button: {
+                             useCustomButton: false,
+                             textContent: "Pay",
+                             fontSize: "16px",
+                             FontFamily: "Times",
+                             color: "white",
+                             backgroundColor: "#232379",
+                             height: "30px",
+                             borderRadius: "0px",
+                             width: "70%",
+                             margin: "0 auto",
+                             cursor: "pointer"
+                         },
+                         separator: {
+                             useCustomSeparator: false,
+                             textContent: "Enter your card",
+                             fontSize: "20px",
+                             color: "423239",
+                             fonteamily: "sans-serif",
+                             textSpacing: "2pz",
+                             linestyle: "dashed",
+                             lineColor: "#000000",
+                             lineThickness: "2px"
+                         },
+                     },
+                 },
+                 googlePay: {
+                     cardViewId: "gp-card-element",
+                    /* style: {
+                         frameHeight: 51,
+                         button: {
+                             height: "40px",
+                             text: "pay", // Accepted texts: ["book", "buy", "checkout", "donate", "order", "pay", "plain", "subscribe"]
+                             borderRadius: "8px",
+                             color: "black", // Accepted colors: ["black", "white", "default"]
+                             language: "en"
+                         }
+                     }*/
+
+                 },
+                 /* applePay: {
+                 supportedNetworks: ["visa", "masterCard"],
+                 sessionStarted: startApplePay,
+                // containerId: "apple-pay",
+                 callback: payment,
+                 style: {
+                     frameHeight: "40px",
+                     frameWidth: "100%"
+                 }
+
+             },*/
+             }
+         };
+
+         myfatoorah.init(config);
+
+        /* function payment(response) {
+             if (response.isSuccess) {
+                 switch (response.paymentType) {
+                     case "ApplePay":
+                         console.log("Apple Pay Response>>\n" + JSON.stringify(response));
+                         break;
+                     case "GooglePay":
+                         console.log("Google Pay response >>\n" + JSON.stringify(response));
+                         break;
+                     case "Card":
+                         console.log("Card Response >>\n" + JSON.stringify(response));
+                         break;
+                     case "StcPay":
+                         console.log("STC Pay response >>\n" + JSON.stringify(response));
+                         break;
+                     default:
+                         console.log("Unknown payment type >>\n" + JSON.stringify(response));
+                         break;
+                 }
+             } else {
+                 console.log("error", response);
+             }
+         }*/
+         function payment(response) {
+             if (response.isSuccess) {
+                 console.log(response.paymentType + " Response >>\n" + JSON.stringify(response));
+
+                 // Prepare the data object to send to your backend
+                 var paymentData = {
+                     InvoiceValue: amount,
+                     CallBackUrl: "https://localhost:7174/Home/Success",
+                     ErrorUrl: "https://localhost:7174/Home/Error",
+                     SessionId: response.sessionId
+                 };
+
+                 // Make AJAX call to your controller
+                 $.ajax({
+                     url: '/Home/ExecutePayment',
+                     type: 'POST',
+                     contentType: 'application/json',
+                     data: JSON.stringify(paymentData),
+                     headers: {
+                         'Accept': 'application/json',
+                         'Access-Control-Allow-Origin': '*'
+                     },
+                     success: function (result) {
+                         console.log('Payment processed successfully', result);
+                         window.location.href = result.data.paymentURL
+                         // Redirect to success page if needed
+                         // window.location.href = '/Home/Success';
+                     },
+                     error: function (xhr, status, error) {
+                         console.error('Error processing payment', error);
+                         // Redirect to error page if needed
+                         // window.location.href = '/Home/Error';
+                     }
+                 });
+             } else {
+                 console.log("Payment failed", response);
+                 // Handle payment failure (e.g., show error message)
+             }
+         }
+
+         function stcSessionStarted(data) {
+             console.log("STC Session Started\n" + JSON.stringify(data));
+         }
+
+         function paymentSTC(response) {
+             var sessionId = response.sessionId;
+             var STCMobileNumber = response.mobileNumber;
+             console.log("SessionID via STC >> ", sessionId);
+             console.log("Mobile Number via STC >> ", STCMobileNumber);
+             console.log("response via STC >> ", response);
+         }
+
+         function sessionCanceled() {
+             console.log("Failed");
+         }
+
+         function sessionStarted() {
+             console.log("Start");
+         }
+
+         function updateAmount(amount) {
+             myfatoorah.updateAmount(amount);
+         }
+
+         function paymentAP(response) {
+             var sessionId = response.sessionId;
+             var cardBrandAP = response.card.brand;
+             console.log("SessionID via AP >> ", sessionId);
+             console.log("cardBrand via AP >> ", cardBrandAP);
+             console.log("response via AP >> ", response);
+             var paymentData = {
+                 InvoiceValue: amount,
+                 CallBackUrl: "https://localhost:7174/Home/Success",
+                 ErrorUrl: "https://localhost:7174/Home/Error",
+                 SessionId: response.sessionId
+             };
+             $.ajax({
+                 url: '/Home/ExecutePayment',
+                 type: 'POST',
+                 contentType: 'application/json',
+                 data: JSON.stringify(paymentData),
+                 headers: {
+                     'Accept': 'application/json',
+                     'Access-Control-Allow-Origin': '*'
+                 },
+                 success: function (result) {
+                     console.log('Payment processed successfully', result);
+                     window.location.href = result.data.paymentURL
+                     // Redirect to success page if needed
+                     // window.location.href = '/Home/Success';
+                 },
+                 error: function (xhr, status, error) {
+                     console.error('Error processing payment', error);
+                     window.location.href = result.data.paymentURL
+                     // Redirect to error page if needed
+                     // window.location.href = '/Home/Error';
+                 }
+             });
+         }
+
+         function paymentGP(response) {
+             var sessionId = response.sessionId;
+             var cardBrandGP = response.card.brand;
+             console.log("SessionID via GP >> ", sessionId);
+             console.log("cardBrand via GP >> ", cardBrandGP);
+             console.log("response via GP >> ", response);
+         }
+
+         function submit() {
+             console.log("Submit");
+             myfatoorah.submitCardPayment();
+         }
+
+         function customSubmit() {
+             console.log("Custom Submit");
+             myfatoorah.submitCardPayment();
+         }
+
+         function handleCardBinChanged(response) {
+             console.log(response);
+         }
+
+         function startApplePay() {
+             console.log("using custom button");
+             myfatoorah.initApplePayPayment();
+         }
+    </script>
+}
+
+<div class="payment-container">
+    <div id="unified-session"></div>
+    <!-- Apple Pay Container -->
+    <div id="apple-pay"></div>
+
+    <div id="gp-card-element"></div>
+
+    <!-- STC Pay Container -->
+    <div id="stc-pay"></div>
+</div>
