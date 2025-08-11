@@ -49,7 +49,7 @@ A service to help you integrate **online payments** through the [MyFatoorah](htt
             return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request");
         }
     }
-    ```
+
 ### 3. Add the `ExecutePayment` Endpoint
 This endpoint will be called via AJAX from the payment view you created (In the AJAX section, make sure to add the correct path for the `ExecutePayment`.
 ```csharp
