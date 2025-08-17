@@ -1,15 +1,11 @@
 ﻿
-
 namespace PaymentIntegration.Dtos
 {
-
-    public class ExecutePaymentDto
+    public class ExecutePaymentSessionDto
     {
         public decimal InvoiceValue { get; set; } = 0;
-        public int PaymentMethodId { get; set; } = 20;
         public string SessionId { get; set; } = "";
         public string CallBackUrl { get; set; } = "http://localhost:3000/payment";
         public string ErrorUrl { get; set; } = "http://localhost:3000/payment";
-
     }
 }

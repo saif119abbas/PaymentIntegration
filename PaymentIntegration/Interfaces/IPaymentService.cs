@@ -8,6 +8,7 @@ namespace PaymentIntegration.Interfaces
         Task<CreateInvoiceResponse>CreateInvoiceAsync(CreateInvoiceDto dto);
         Task<string> InitiatePayment(InitiatePaymentDto initiatePayment);
         Task<string> InitiateSession(InitiateSessionDto initiateSession);
+        Task<string> UpdateSession(UpdateSessionDto updateSession);
         Task<string> ExecutePayment(ExecutePaymentDto executePaymentDto);
         Task<string> DirectPayment(DirectPaymentDto directPaymentDto);
         Task<string> GetPaymentStatusAsync(string paymentId, string keyType = "PaymentId");

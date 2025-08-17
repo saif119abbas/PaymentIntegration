@@ -66,6 +66,17 @@ namespace PaymentIntegration.Services
             try
             {
                 var executePaymentJSON = JsonConvert.SerializeObject(executePaymentDto);
+                if (!String.IsNullOrEmpty(executePaymentDto.SessionId))
+                {
+                    var executePaymentSessionDto = new ExecutePaymentSessionDto()
+                    {
+                        InvoiceValue= executePaymentDto.InvoiceValue,
+                        SessionId =executePaymentDto.SessionId,
+                        CallBackUrl="http://localhost:3000/payment",
+                        ErrorUrl= "http://localhost:3000/payment"
+                    };
+                    executePaymentJSON = JsonConvert.SerializeObject(executePaymentSessionDto);
+                }
                 var response = await PerformRequest(executePaymentJSON, endPoint: "ExecutePayment").ConfigureAwait(false);
                 return response;
             }
@@ -119,6 +130,19 @@ namespace PaymentIntegration.Services
                 throw new Exception($"An error occured {ex.Message}");
             }
         }
+        public async Task<string> UpdateSession(UpdateSessionDto updateSession)
+        {
+            try
+            {
+                var executeSessionJSON = JsonConvert.SerializeObject(updateSession);
+                var response = await PerformRequest(executeSessionJSON, endPoint: "UpdateSession").ConfigureAwait(false);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occured {ex.Message}");
+            }
+        }
         private async Task<string> PerformRequest(string requestJSON, string url = "", string endPoint = "")
         {
             if (string.IsNullOrEmpty(url))
@@ -147,6 +171,5 @@ namespace PaymentIntegration.Services
                 return await responseMessage.Content.ReadAsStringAsync();
             }
         }
-
     }
 }
