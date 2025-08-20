@@ -8,7 +8,7 @@ namespace PaymentIntegration.Dtos
         public string Token { get; set; } = "";
         public bool SaveToken { get; set; } = true;
         public bool ByPass3D { get; set; } = true;
-        public CardDto Card { get; set; }
+       // public CardDto Card { get; set; }
 
 
     }
