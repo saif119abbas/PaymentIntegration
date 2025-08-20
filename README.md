@@ -109,8 +109,8 @@ OBP_APIPATHZERO=obp
 }
 ```
 ## **If u get an error for role, use this endpoint `{{baseURL}}/obp/v3.0.0/users/{{user-id}}/entitlements` add the bank_id and the role you want, the user_id for the id for super admin **
--Add Account from this endpoint `{{baseURL}}/obp/v5.1.0/banks/BANK_ID/accounts`, the bank ID of the bank you created, and the user ID in the body, using the ID of the super admin.
--Add Counterparty from this endpoint `{{baseURL}}/obp/v5.1.0/management/banks/BANK_ID/accounts/ACCOUNT_ID/owner/counterparties`, the bank ID of the bank you created, and the account ID of the account you created.
+- Add Account from this endpoint `{{baseURL}}/obp/v5.1.0/banks/BANK_ID/accounts`, the bank ID of the bank you created, and the user ID in the body, using the ID of the super admin.
+- Add Counterparty from this endpoint `{{baseURL}}/obp/v5.1.0/management/banks/BANK_ID/accounts/ACCOUNT_ID/owner/counterparties`, the bank ID of the bank you created, and the account ID of the account you created.
 ```json
 {
   "name": "Saif Abbas",
