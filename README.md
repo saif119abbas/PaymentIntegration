@@ -131,7 +131,8 @@ OBP_APIPATHZERO=obp
       "value": "english Name"
     }
   ]
-}```
+}
+```
 For `other_account_routing_address`, `other_account_secondary_routing_address`, use the account ID that you have already created. For `other_bank_routing_address`, `other_branch_routing_address`, use the bank ID that you have already created.
 -Create a new user from this endpoint `{{baseURL}}/obp/v5.1.0/users`
 -Create an account from this point `{{baseURL}}/obp/v5.1.0/banks/BANK_ID/accounts` but use the user from the user you created from the previous endpoint.
