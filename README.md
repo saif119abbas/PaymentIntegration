@@ -90,7 +90,7 @@ OBP_APIPATHZERO=obp
   OBP_ALLOW_TRANSACTION_REQUESTS=true
   OBP_TRANSACTIONREQUESTS_ENABLED=true
   OBP_TRANSACTIONREQUESTS_SUPPORTED_TYPES=SANDBOX_TAN,FREE_FORM,SEPA,CARD
-```
+  ```
 - Run this command `docker-compose --env-file obp-api.env up -d`.
 -Call create bank endpoint `{{baseURL}}/obp/v5.1.0/banks` this a from of body data
 ```json
