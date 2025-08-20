@@ -14,50 +14,49 @@ A service to help you integrate **online payments** through the [OPEN BANK PROJE
   - Use this `docker-compose.yml`
     ```bash
       version: "3.9"
-
-services:
-  redis:
-    image: redis:latest
-    container_name: obp-redis
-    ports:
-      - "6379:6379"
-    networks:
-      - obp-network
-    restart: unless-stopped
-
-  postgres:
-    image: bitnami/postgresql:latest
-    container_name: obp-postgres
-    environment:
-      - POSTGRES_DB=obp_api.db
-      - POSTGRES_USER=obp_user
-      - POSTGRES_PASSWORD=obp_password
-    volumes:
-      - ./postgres-data:/bitnami/postgresql
-    ports:
-      - "5432:5432"
-    networks:
-      - obp-network
-    restart: unless-stopped
-
-  obp-api:
-    image: openbankproject/obp-api:latest
-    container_name: obp-api
-    env_file:
-      - obp-api.env
-    ports:
-      - "8080:8080"
-    depends_on:
-      - redis
-      - postgres
-    networks:
-      - obp-network
-    restart: unless-stopped
-
-networks:
-  obp-network:
-    driver: bridge
-```
+      services:
+        redis:
+          image: redis:latest
+          container_name: obp-redis
+          ports:
+            - "6379:6379"
+          networks:
+            - obp-network
+          restart: unless-stopped
+      
+        postgres:
+          image: bitnami/postgresql:latest
+          container_name: obp-postgres
+          environment:
+            - POSTGRES_DB=obp_api.db
+            - POSTGRES_USER=obp_user
+            - POSTGRES_PASSWORD=obp_password
+          volumes:
+            - ./postgres-data:/bitnami/postgresql
+          ports:
+            - "5432:5432"
+          networks:
+            - obp-network
+          restart: unless-stopped
+      
+        obp-api:
+          image: openbankproject/obp-api:latest
+          container_name: obp-api
+          env_file:
+            - obp-api.env
+          ports:
+            - "8080:8080"
+          depends_on:
+            - redis
+            - postgres
+          networks:
+            - obp-network
+          restart: unless-stopped
+      
+      networks:
+        obp-network:
+          driver: bridge
+    ```
 -Use this environment file `obp-api.env`:
 ```bash
 OBP_CONNECTOR=mapped
