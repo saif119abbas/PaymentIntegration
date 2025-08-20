@@ -57,7 +57,7 @@ A service to help you integrate **online payments** through the [OPEN BANK PROJE
         obp-network:
           driver: bridge
     ```
--Use this environment file `obp-api.env`:
+    - Use this environment file `obp-api.env`:
 ```bash
 OBP_CONNECTOR=mapped
 OBP_HOSTNAME=http://localhost:8080
