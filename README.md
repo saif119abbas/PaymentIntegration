@@ -6,120 +6,71 @@ A service to help you integrate **online payments** through the [MyFatoorah](htt
 
 ## **Features**
 - Pay through a payment link.
-- Integrate an embedded payment system.
+- Integrate direct payment that allows you to control the front-end  ui.
 
 ---
 
 ## **Getting Started**
+### 1. For a visa card payment
+  - Call the `ExecutePayment` function from your controller as shown in the following code (set `PaymentMethodId` to 20), if the user needs to save the token, set `SaveToken` to true.
+    ```csharp
+       [HttpPost]
+   [ProducesResponseType(typeof(ExecutePaymentResponse), StatusCodes.Status200OK)]
+   [ProducesResponseType(StatusCodes.Status400BadRequest)]
+   public async Task<ActionResult<ExecutePaymentResponse>> ExecutePayment([FromBody] ExecutePaymentDto executePaymentRequest)
+   {
+       try
+       {
+           var rawResponse = await _paymentService.ExecutePayment(executePaymentRequest);
+           _logger.LogInformation("RAW API RESPONSE: {Response}", rawResponse);
+           var result = JsonConvert.DeserializeObject<ExecutePaymentResponse>(rawResponse)!;
 
-### 1. Create the Payment View
-- Create a new view inside your project.
-- You can copy the `EmbeddedPayment.cshtml` (or equivalent) from this project's `Views` folder.
+           // Validate the payment URL before returning it
+         /*  if (!IsValidMyFatoorahUrl(result.Data.PaymentURL))
+           {
+               throw new Exception("Invalid payment URL received from payment gateway");
+           }*/
 
----
-### 2. Add the `InitiateSession` Method
-  - Call the `InitiateSession` function from your controller.
-  - If the result is successful, return the view you created.
-```csharp
-          public async Task<ActionResult<InitiateSessionResult>> InitiateSession( InitiateSessionDto initiateSessionDto)
-    {
-
-        try
+           return Ok(result);
+       }
+       catch (Exception ex)
+       {
+           _logger.LogError(ex, "Payment failed");
+           return BadRequest(ex.Message);
+       }
+   }```
+    
+  - If the result is successful, store the `paymentURL` and call `DirectPayment` as follows:
+    ```csharp
+            [HttpPost]
+        [ProducesResponseType(typeof(DirectPaymentResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ExecutePaymentResponse>> DirectPayment([FromBody] DirectPaymentDto directPaymentDto,string url)
         {
-            var initiateSessionResponse = await _paymentService.InitiateSession(initiateSessionDto);
-            var result = JsonConvert.DeserializeObject<InitiateSessionResult>(initiateSessionResponse);
-
-            if (result == null)
+            try
             {
-                return BadRequest("Failed to process payment initiation");
-            }
+                var rawResponse = await _paymentService.DirectPayment(directPaymentDto);
+                _logger.LogInformation("RAW API RESPONSE: {Response}", rawResponse);
+                var result = JsonConvert.DeserializeObject<ExecutePaymentResponse>(rawResponse)!;
+               /* if (!IsValidMyFatoorahUrl(result.Data.PaymentURL))
+                {
+                    throw new Exception("Invalid payment URL received from payment gateway");
+                }*/
 
-            if (!result.IsSuccess)
+                return Ok(result);
+            }
+            catch (Exception ex)
             {
-                return BadRequest(result);
+                _logger.LogError(ex, "Payment failed");
+                return BadRequest(ex.Message);
             }
-
-            ViewBag.SessionId = result.Data.SessionId;
-            ViewBag.CountryCode = result.Data?.CountryCode;
-            return View("EmbeddedPayment");
         }
-        catch (Exception ex)
-        {
-            // Log the exception here
-            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request");
-        }
-    }
-```
+    ```
+    - If the user selects to save their card, the response will return the card token. We should store it with the user profile so he can use it, and next time we need to send the token and CVV of the card
+### 2. For Google Pay, we need to contact to account manager to activate it.
+### 3. For Apple Pay, we need to contact to account manager to activate it, and validate our domain.
 
-### 3. Add the `ExecutePayment` Endpoint
-This endpoint will be called via AJAX from the payment view you created (In the AJAX section, make sure to add the correct path for the `ExecutePayment`.
-```csharp
-    [HttpPost]
-    [ProducesResponseType(typeof(ExecutePaymentResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ExecutePaymentResponse>> ExecutePayment([FromBody] ExecutePaymentDto executePaymentRequest)
-    {
-        try
-        {
-            var rawResponse = await _paymentService.ExecutePayment(executePaymentRequest);
-            _logger.LogInformation("RAW API RESPONSE: {Response}", rawResponse);
 
-            var result = JsonConvert.DeserializeObject<ExecutePaymentResponse>(rawResponse)!;
 
-            // Validate the payment URL before returning it
-            if (!IsValidMyFatoorahUrl(result.Data.PaymentURL))
-            {
-                throw new Exception("Invalid payment URL received from payment gateway");
-            }
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Payment failed");
-            return BadRequest(ex.Message);
-        }
-    }
-```
-### 4. Payment URL Validation Helper
-This method ensures the returned payment URL is safe and from the correct domain.
-```csharp
-private bool IsValidMyFatoorahUrl(string url)
-{
-    if (string.IsNullOrWhiteSpace(url))
-        return false;
-
-    var allowedDomains = new[]
-    {
-        "https://myfatoorah.com",
-        "https://demo.myfatoorah.com",
-        // Add any other allowed domains here
-    };
-
-    try
-    {
-        var uri = new Uri(url);
-
-        // Validate domain
-        if (!allowedDomains.Any(d => uri.AbsoluteUri.StartsWith(d, StringComparison.OrdinalIgnoreCase)))
-            return false;
-
-        // Validate path starts with expected pattern
-        if (!uri.AbsolutePath.StartsWith("/En/KWT/PayInvoice/", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        // Validate required query parameters
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        if (string.IsNullOrEmpty(query["paymentId"]) || string.IsNullOrEmpty(query["sessionId"]))
-            return false;
-
-        return true;
-    }
-    catch (UriFormatException)
-    {
-        return false;
-    }
-}
-```
 
 
