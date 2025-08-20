@@ -177,8 +177,8 @@ For `other_account_routing_address`, `other_account_secondary_routing_address`, 
   "brand": "Visa"
 }
 ```
--Add a balance to the last account you created from this endpoint `/obp/v5.1.0/banks/BANK_ID/accounts/ACCOUNT_ID/balances`
--Make sure to save each customer ID, user ID, and account ID to use them for another endpoint. And search this link `https://apiexplorer-ii-sandbox.openbankproject.com/operationid/OBPv3.0.0-getBranch?version=OBPv5.1.0` for get APIs you will need to get information. 
+- Add a balance to the last account you created from this endpoint `/obp/v5.1.0/banks/BANK_ID/accounts/ACCOUNT_ID/balances`
+- Make sure to save each customer ID, user ID, and account ID to use them for another endpoint. And search this link `https://apiexplorer-ii-sandbox.openbankproject.com/operationid/OBPv3.0.0-getBranch?version=OBPv5.1.0` for get APIs you will need to get information. 
 -Each api needs authorization,` DirectLogin token=TOKEN`. You get the TOKEN from the direct login endpoint.
 
 
