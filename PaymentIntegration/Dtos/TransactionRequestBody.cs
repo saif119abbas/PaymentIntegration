@@ -62,5 +62,6 @@ namespace PaymentIntegration.Dtos
 
         [Required(ErrorMessage = "The payment method is required")]
         public int PaymentMethod { get; set; }
+
     }
 }

@@ -17,6 +17,7 @@ namespace PaymentIntegration.Dtos
         public string BankId { get; set; } = default!;
 
         [Required(ErrorMessage = "TransactionRequestId is required.")]
+
         public string TransactionRequestId { get; set; } = default!;
         public string ReasonCode { get; set; } = "";
         public string AdditionalInformation { get; set; } = "";

@@ -20,4 +20,10 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="PaymentIntegration">
+      <HintPath>bin\Debug\net8.0\PaymentIntegration.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
