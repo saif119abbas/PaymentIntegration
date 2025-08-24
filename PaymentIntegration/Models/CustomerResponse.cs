@@ -1,9 +1,14 @@
-﻿namespace PaymentIntegration.Models
+﻿using System.Text.Json.Serialization;
+
+namespace PaymentIntegration.Models
 {
     public class FaceImage
     {
-        public string url { get; set; }
-        public string date { get; set; }
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("date")]
+        public DateTime Date { get; set; }
     }
 
     public class CreditRating

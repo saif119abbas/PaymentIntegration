@@ -2,9 +2,9 @@
 using PaymentIntegration.Dtos;
 using PaymentIntegration.Interfaces;
 using PaymentIntegration.Models;
-
+using PaymentIntegration.Utilities;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
+
 namespace PaymentIntegration.Services
 {
 
@@ -15,6 +15,7 @@ namespace PaymentIntegration.Services
         private readonly string _baseURL = "https://apitest.myfatoorah.com/";
         private readonly string _host = "http://localhost:8080";
         private readonly string _token = "rLtt6JWvbUHDDhsZnfpAhpYk4dxYDQkbcPTyGaKp2TYqQgG7FGZ5Th_WD53Oq8Ebz6A53njUoo1w3pjU1D4vs_ZMqFiz_j0urb_BH9Oq9VZoKFoJEDAbRZepGcQanImyYrry7Kt6MnMdgfG5jn4HngWoRdKduNNyP4kzcp3mRv7x00ahkm9LAK7ZRieg7k1PDAnBIOG3EyVSJ5kK4WLMvYr7sCwHbHcu4A5WwelxYK0GMJy37bNAarSJDFQsJ2ZvJjvMDmfWwDVFEVe_5tOomfVNt6bOg9mexbGjMrnHBnKnZR1vQbBtQieDlQepzTZMuQrSuKn-t5XZM7V6fCW7oP-uXGX-sMOajeX65JOf6XVpk29DP6ro8WTAflCDANC193yof8-f5_EYY-3hXhJj7RBXmizDpneEQDSaSz5sFk0sV5qPcARJ9zGG73vuGFyenjPPmtDtXtpx35A-BVcOSBYVIWe9kndG3nclfefjKEuZ3m4jL9Gg1h2JBvmXSMYiZtp9MR5I6pvbvylU_PP5xJFSjVTIz7IQSjcVGO41npnwIxRXNRxFOdIUHn0tjQ-7LwvEcTXyPsHXcMD8WtgBh-wxR8aKX7WPSsT1O8d8reb2aR7K3rkV3K82K_0OgawImEpwSvp9MNKynEAJQS6ZHe_J_l77652xwPNxMRTMASk1ZsJL";
+
 
         public async Task<LoginResponse> LoginOpenBankProject()
         {
@@ -36,7 +37,8 @@ namespace PaymentIntegration.Services
                 if (string.IsNullOrEmpty(result.Token))
                 {
                     result.IsSuccess = false;
-                    result.Message = result.Message ?? "Authentication failed: No token received";
+                    
+                    result.Message = OpenBankProjectErrorParser.GetUserFriendlyErrorMessage(result.Message) ?? "Authentication failed: No token received";
                 }
                 return result;
             }
@@ -66,7 +68,27 @@ namespace PaymentIntegration.Services
                 throw new Exception($"An error occured {ex.Message}");
             }
         }
-       public async Task<string> SeedMainData()
+        public async Task<string> AnswerChallenge(ChallengeBody challengeBody)
+        {
+            if (challengeBody == null)
+            {
+                throw new Exception($"The body is null");
+            }
+            string endpoint = new string($"/obp/v5.1.0/banks/{challengeBody.BankId}/accounts/{challengeBody.AccountId}/owner/transaction-request-types/CARD/transaction-requests/{challengeBody.TransactionRequestId}/challenge");
+            ChallengeDto challengeDto=new ChallengeDto()
+            {
+                Id = challengeBody.Id,
+                Answer=challengeBody.Answer,
+                ReasonCode=challengeBody.ReasonCode,
+                AdditionalInformation=challengeBody.AdditionalInformation,
+
+            };
+            var loginResult = await LoginOpenBankProject();
+            var authorization = $"token={loginResult.Token}";
+            var result = await PerformRequest(authorization, endPoint: endpoint);
+            return result;
+        }
+        public async Task<string> SeedMainData()
         {
             var loginResult = await LoginOpenBankProject();
             var authorization = $"token={loginResult.Token}";
@@ -91,25 +113,95 @@ namespace PaymentIntegration.Services
                 }
             };
             var bankId = bank.id;
-            var role = new
+         
+            var requestJSON = JsonConvert.SerializeObject(bank);
+            var resultAddBank = await PerformRequest(authorization, endPoint: "/obp/v5.1.0/banks", requestJSON);
+            result += $"Reuslt Add Bank:\n{resultAddBank} \n============================================ \n";
+
+            
+            var canCreateBank = new
+            {
+                bank_id = bankId,
+                role_name = "CanCreateBank"
+            };
+            var requestCanCreateBankJSON = JsonConvert.SerializeObject(canCreateBank);
+            var resultAddCanCreateBank = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateBankJSON);
+
+            var canCreateBranchAtAnyBank = new
+            {
+                bank_id = "",
+                role_name = "CanCreateBranchAtAnyBank"
+            };
+            var requestCanCreateBranchAtAnyBankJSON = JsonConvert.SerializeObject(canCreateBranchAtAnyBank);
+            var resultAddcanCreateBranchAtAnyBank = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateBranchAtAnyBankJSON);
+
+
+            var canCreateBranch = new
+            {
+                bank_id = bankId,
+                role_name = "CanCreateBranch"
+            };
+            var requestCanCreateBranchJSON = JsonConvert.SerializeObject(canCreateBranch);
+            var resultAddCanCreateBranchJSON = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateBranchJSON);
+
+            var canCreateAnyTransactionRequest = new
+            {
+                bank_id = bankId,
+                role_name = "CanCreateAnyTransactionRequest"
+            };
+            var requestCanCreateAnyTransactionRequestJSON = JsonConvert.SerializeObject(canCreateBranch);
+            var resultAddrequestCanCreateAnyTransactionRequestJSONJSON = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateAnyTransactionRequestJSON);
+
+            var canCreateCustomerAtAnyBank = new
+            {
+                bank_id = "",
+                role_name = "CanCreateCustomerAtAnyBank"
+            };
+            var requestCanCreateCustomerAtAnyBankJSON = JsonConvert.SerializeObject(canCreateCustomerAtAnyBank);
+            var resultAddCanCreateCustomerAtAnyBankJSON = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateCustomerAtAnyBankJSON);
+
+          
+            var canCreateCardsForBank = new
             {
                 bank_id = bankId,
                 role_name = "CanCreateCardsForBank"
             };
-            var requestRoleJSON = JsonConvert.SerializeObject(role);
-            var resultAddRole = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
-               requestRoleJSON);
-            var role2 = new
+            var requestCanCreateCardsForBankJSON = JsonConvert.SerializeObject(canCreateCardsForBank);
+            var resultAddCanCreateCardsForBank = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateCardsForBankJSON);
+            var canCreateAccount = new
             {
                 bank_id = bankId,
                 role_name = "CanCreateAccount"
             };
-            var requestRole2JSON = JsonConvert.SerializeObject(role2);
-            var resultAddRole2 = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
-               requestRoleJSON);
-            var requestJSON = JsonConvert.SerializeObject(bank);
-            var resultAddBank = await PerformRequest(authorization, endPoint: "/obp/v5.1.0/banks", requestJSON);
-            result += $"Reuslt Add Bank:\n{resultAddBank} \n============================================ \n";
+            var requestCanCreateAccountJSON = JsonConvert.SerializeObject(canCreateAccount);
+            var resultAddCanCreateAccount = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateAccountJSON);
+            var canCreateBankAccountBalance = new
+            {
+                bank_id = bankId,
+                role_name = "CanCreateBankAccountBalance"
+            };
+            var requestCanCreateBankAccountBalanceJSON = JsonConvert.SerializeObject(canCreateBankAccountBalance);
+            var resultAddCanCreateBankAccountBalance = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanCreateBankAccountBalanceJSON);
+            var canGetCustomersAtAnyBank = new
+            {
+                bank_id = "",
+                role_name = "CanGetCustomersAtAnyBank"
+            };
+            var requestCanGetCustomersAtAnyBankJSON = JsonConvert.SerializeObject(canCreateBankAccountBalance);
+            var resultAddCanGetCustomersAtAnyBank = await PerformRequest(authorization, endPoint: $"/obp/v3.0.0/users/{userAdminId}/entitlements",
+               requestCanGetCustomersAtAnyBankJSON);
+
+
+            
+
             var adminAccount = new
             {
                 user_id = userAdminId,
@@ -133,6 +225,7 @@ namespace PaymentIntegration.Services
             var requestAccountJSON = JsonConvert.SerializeObject(adminAccount);
             var resultAddAccount = await PerformRequest(authorization, endPoint: $"/obp/v5.1.0/banks/{bankId}/accounts", requestAccountJSON);
             var adminAccountId = JsonConvert.DeserializeObject<CreateAccountResponse>(resultAddAccount)!.account_id;
+
             result += $"Reuslt Add Account:\n{resultAddAccount} \n============================================ \n";
             var branch = new
             {
@@ -347,10 +440,29 @@ namespace PaymentIntegration.Services
             var resultAddCustomerAccount = await PerformRequest(authorization, endPoint: $"/obp/v5.1.0/banks/{bankId}/accounts", requestCustomerAccountJSON);
             result += $"Reuslt Add Customer Account:\n{resultAddCustomerAccount} \n============================================ \n";
             var customerAccountId = JsonConvert.DeserializeObject<CreateAccountResponse>(resultAddCustomerAccount)!.account_id;
+
+            var getCustomersForBank = await PerformGetRequest(authorization, "/obp/v5.1.0/customers");
+            var customers = JsonConvert.DeserializeObject<CustomerResponseForBank>(getCustomersForBank);
+
+            var random = new Random();
+            string customer_number;
+
+            // Extract existing customer numbers for quick lookup
+            var existingNumbers = customers.Customers
+                .Select(c => c.CustomerNumber)
+                .ToHashSet();
+            do
+            {
+                customer_number = random.Next(1000000, 10000000).ToString(); // 7 digits
+            }
+            while (existingNumbers.Contains(customer_number));
+
+
+
             var customer = new
             {
                 legal_name = "Customer Account",
-                customer_number = "9998884",
+                customer_number = customer_number?? random.Next(1000000, 10000000).ToString(),
                 mobile_phone_number = "+49 30 901829",
                 email = "test@example.com",
                 face_image = new
@@ -387,7 +499,7 @@ namespace PaymentIntegration.Services
             var resultAddCustomer = await PerformRequest(authorization, endPoint: $"/obp/v5.1.0/banks/{bankId}/customers",
                requestCustomerJSON);
             result += $"Reuslt Add Customer :\n{resultAddCustomer} \n============================================ \n";
-            var customerId = JsonConvert.DeserializeObject<CustomerResponse>(resultAddCustomer);
+            var customerId = JsonConvert.DeserializeObject<CustomerResponse>(resultAddCustomer).customer_id;
             var card = new
             {
                 card_number = "364435172576216",
@@ -418,7 +530,7 @@ namespace PaymentIntegration.Services
             };
             var requestCardJSON = JsonConvert.SerializeObject(card);
             var resultAddCard = await PerformRequest(authorization, endPoint: $"/obp/v5.1.0/management/banks/{bankId}/cards",
-               requestCustomerJSON);
+               requestCardJSON);
             result += $"Reuslt Add Card :\n{resultAddCard} \n============================================ \n";
            
         var balance = new
@@ -429,7 +541,7 @@ namespace PaymentIntegration.Services
      
         var requestBalanceJSON = JsonConvert.SerializeObject(balance);
             var resultAddBalance = await PerformRequest(authorization, endPoint: $"/obp/v5.1.0/banks/{bankId}/accounts/{customerAccountId}/balances",
-               requestCustomerJSON);
+               requestBalanceJSON);
             result += $"Reuslt Add Balance :\n{resultAddBalance} \n============================================ \n";
 
             return result;

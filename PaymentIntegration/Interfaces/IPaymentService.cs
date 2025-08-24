@@ -14,6 +14,7 @@ namespace PaymentIntegration.Interfaces
         Task<string> GetPaymentStatusAsync(string paymentId, string keyType = "PaymentId");*/
         Task<LoginResponse> LoginOpenBankProject();
         Task<string> CreateTransactionRequest(TransactionRequestDto transactionRequestDto);
+        Task<string> AnswerChallenge(ChallengeBody challengeBody);
         Task<string> SeedMainData();
         Task<string> SeedCustomerData();
     }

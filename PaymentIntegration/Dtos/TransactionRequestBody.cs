@@ -24,8 +24,8 @@ namespace PaymentIntegration.Dtos
 
         [JsonProperty("card_number")]
         [Required(ErrorMessage = "Card number is required")]
-        [CreditCard(ErrorMessage = "Invalid card number")]
-        [RegularExpression("^[0-9]{13,19}$", ErrorMessage = "Card number must be 13-19 digits")]
+        //[CreditCard(ErrorMessage = "Invalid card number")]
+        //[RegularExpression("^[0-9]{13,19}$", ErrorMessage = "Card number must be 13-19 digits")]
         public string CardNumber { get; set; } = "";
 
         [JsonProperty("name_on_card")]
@@ -51,8 +51,16 @@ namespace PaymentIntegration.Dtos
 
         [JsonProperty("currency")]
         [Required(ErrorMessage = "Currency is required")]
-        [RegularExpression("^(EUR|USD|ILS|JOD)$", ErrorMessage = "Currency must be EUR, USD, ILS, or JOD")]
+        //[RegularExpression("^(EUR|USD|ILS|JOD)$", ErrorMessage = "Currency must be EUR, USD, ILS, or JOD")]
         [StringLength(3, MinimumLength = 3, ErrorMessage = "Currency code must be exactly 3 characters")]
         public string Currency { get; set; } = "";
+        [Required(ErrorMessage = "The employee should be defined")]
+        public Guid? TipReceiverId { get; set; }
+
+        [Required(ErrorMessage = "The phone number is required")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "The payment method is required")]
+        public int PaymentMethod { get; set; }
     }
 }

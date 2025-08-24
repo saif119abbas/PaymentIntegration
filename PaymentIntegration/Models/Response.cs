@@ -2,10 +2,10 @@
 
 namespace PaymentIntegration.Models
 {
-    public class ErrorModel
+    public class Response
     {
-       [JsonProperty("IsSuccess")]
-        public bool IsSuccess { get; set; } = false;
+        [JsonProperty("IsSuccess")]
+        public bool IsSuccess { get; set; } = true;
         [JsonProperty("code")]
         public string Code { get; set; } = "";
         [JsonProperty("message")]

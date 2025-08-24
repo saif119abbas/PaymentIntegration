@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace PaymentIntegration.Dtos
+namespace PaymentIntegration.Models
 {
-    public class TransactionRequestResponse
+    public class TransactionRequestResponse:Response
     {
         [JsonProperty("id")]
         public string Id { get; set; }
